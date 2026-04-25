@@ -63,19 +63,42 @@ class AdminController extends Controller
         return back()->with('success', 'Akun ' . $request->role . ' baru berhasil dibuat secara manual!');
     }
 
-    // Menampilkan halaman manajemen laci
-    public function laciIndex()
+    // Laci Index
+    public function laciIndex(Request $request)
     {
-        $lacis = \App\Models\Laci::all();
-        return view('admin.laci', compact('lacis'));
+        $query = \App\Models\Laci::query();
+
+        // 1. Logika Filter: Jika ada input angkatan dari dropdown
+        if ($request->filled('angkatan')) {
+            $query->where('angkatan', $request->angkatan);
+        }
+
+        $lacis = $query->latest()->get();
+
+        // 2. Ambil daftar angkatan unik untuk mengisi pilihan di dropdown filter
+        $listAngkatan = \App\Models\Laci::whereNotNull('angkatan')
+            ->distinct()
+            ->orderBy('angkatan', 'desc')
+            ->pluck('angkatan');
+
+        return view('admin.laci', compact('lacis', 'listAngkatan'));
     }
 
-    // Menyimpan laci baru
+    // Menyimpan laci baru dengan angkatan
     public function laciStore(Request $request)
     {
-        $request->validate(['nama_laci' => 'required|unique:lacis,nama_laci']);
-        \App\Models\Laci::create(['nama_laci' => $request->nama_laci]);
-        return back()->with('success', 'Laci baru berhasil ditambahkan!');
+        // Validasi: nama laci wajib ada, angkatan wajib angka 2 digit
+        $request->validate([
+            'nama_laci' => 'required',
+            'angkatan' => 'required|numeric|digits:2'
+        ]);
+
+        \App\Models\Laci::create([
+            'nama_laci' => $request->nama_laci,
+            'angkatan' => $request->angkatan
+        ]);
+
+        return back()->with('success', 'Laci baru untuk angkatan 20' . $request->angkatan . ' berhasil ditambahkan!');
     }
 
     // Menghapus laci
@@ -210,8 +233,18 @@ class AdminController extends Controller
 
     public function arsipMahasiswa($id)
     {
+        // 1. Cari data mahasiswa yang dimaksud
         $mahasiswa = \App\Models\User::where('role', 'mahasiswa')->findOrFail($id);
-        $lacis = \App\Models\Laci::all();
+        
+        // 2. Ambil 2 digit angkatan dari NIM mahasiswa tersebut
+        $angkatanMhs = substr($mahasiswa->nim, 4, 2);
+
+        // 3. Filter laci: Hanya tampilkan laci yang angkatannya cocok 
+        // atau laci umum (angkatan null)
+        $lacis = \App\Models\Laci::where('angkatan', $angkatanMhs)
+                                 ->orWhereNull('angkatan')
+                                 ->get();
+
         $dokumens = \App\Models\Dokumen::where('user_id', $id)->get();
 
         return view('admin.arsip', compact('mahasiswa', 'lacis', 'dokumens'));
@@ -264,6 +297,17 @@ class AdminController extends Controller
 
         return Storage::download($dokumen->path_file, $dokumen->nama_file_asli);
     }
+
+    public function preview($id)
+    {
+        $dokumen = \App\Models\Dokumen::findOrFail($id);
+
+        if (!\Illuminate\Support\Facades\Storage::exists($dokumen->path_file)) {
+            return back()->with('error', 'File tidak ditemukan di server.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::response($dokumen->path_file);
+    }    
 
     public function bulkDeleteMahasiswa(Request $request)
     {

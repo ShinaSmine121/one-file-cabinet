@@ -48,7 +48,7 @@
 <body class="font-body-md text-slate-900">
 
 {{-- SIDEBAR (KONSISTEN) --}}
-<nav class="h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-40">
+<nav id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
     <div class="flex flex-col h-full py-6">
         <div class="px-4 mb-8">
             <div class="flex items-center gap-2 mb-2">
@@ -85,40 +85,67 @@
 </nav>
 
 {{-- HEADER + MAIN --}}
-<div class="ml-56 min-h-screen flex flex-col">
+<div class="lg:ml-56 min-h-screen flex flex-col transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-6 h-full">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('dosen.mahasiswa.index') }}" class="p-2 text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all click-effect">
+        <div class="flex items-center justify-between px-4 lg:px-6 h-full gap-2">
+            
+            {{-- KIRI: Hamburger, Tombol Back, & Judul --}}
+            <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect shrink-0">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <a href="{{ route('dosen.mahasiswa.index') }}" class="p-1.5 sm:p-2 text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all click-effect shrink-0">
                     <span class="material-symbols-outlined">arrow_back</span>
                 </a>
-                <h2 class="text-xl font-bold text-[#1E3A8A]">Arsip Mahasiswa</h2>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <p class="text-sm font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-slate-500">Dosen Teknik Informatika</p>
+                <div class="truncate">
+                    <h2 class="text-lg lg:text-xl font-bold text-[#1E3A8A] truncate">
+                        <span class="hidden sm:inline">Arsip Mahasiswa</span>
+                        <span class="sm:hidden">Arsip</span>
+                    </h2>
                 </div>
-                <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200">
+            </div>
+
+            {{-- KANAN: Profil Dosen --}}
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-0 shrink-0">
+                <div class="text-right min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate max-w-[80px] sm:max-w-none">
+                        {{ Auth::user()->name }}
+                    </p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 leading-none truncate max-w-[80px] sm:max-w-none">
+                        <span class="hidden sm:inline">Dosen Teknik Informatika</span>
+                        <span class="sm:hidden">Dosen TI</span>
+                    </p>
+                </div>
+                <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200 shrink-0">
                     {{ substr(Auth::user()->name, 0, 1) }}
                 </div>
             </div>
+
         </div>
     </header>
 
     <main class="p-6 w-full">
-        {{-- PROFIL MAHASISWA CARD --}}
-        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {{-- PROFIL MAHASISWA CARD & TOTAL ARSIP (UPGRADED) --}}
+        <div class="bg-white p-5 lg:p-6 rounded-xl border border-slate-100 shadow-sm mb-6 lg:mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
             <div>
-                <h3 class="text-2xl font-black text-slate-900">{{ $mahasiswa->name }}</h3>
-                <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">badge</span> 
+                <h3 class="text-xl lg:text-2xl font-black text-slate-900">{{ $mahasiswa->name }}</h3>
+                <p class="text-sm text-slate-500 font-medium mt-1 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">badge</span> 
                     NIM: {{ $mahasiswa->nim }}
                 </p>
             </div>
-            <div class="bg-blue-50 px-5 py-3 rounded-xl border border-blue-100">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Arsip</p>
-                <p class="text-2xl font-black text-[#1E3A8A]">{{ $dokumens->count() }} Berkas</p>
+            
+            {{-- DESAIN BARU TOTAL ARSIP: Lebih Profesional & Modern --}}
+            <div class="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-white border border-blue-100 px-5 py-3.5 rounded-2xl shadow-sm w-full md:w-auto">
+                <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-[#1E3A8A] shrink-0 border border-blue-50">
+                    <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Total Arsip</p>
+                    <p class="text-xl lg:text-2xl font-black text-[#1E3A8A] leading-none">
+                        {{ $dokumens->count() }} <span class="text-xs lg:text-sm font-bold text-blue-600/60">Berkas</span>
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -165,24 +192,32 @@
                             @forelse($dokumenDalamLaci as $dok)
                                 <div class="dokumen-item flex items-center justify-between p-4 bg-slate-50/80 border border-slate-100 rounded-xl hover:bg-white transition-colors" data-dokumen-id="{{ $dok->id }}">
                                     <div class="flex items-center gap-4">
-                                        <span class="material-symbols-outlined text-red-500" style="font-size: 36px;">picture_as_pdf</span>
-                                        <div>
-                                            <p class="font-bold text-slate-900 text-sm">{{ $dok->nama_file_asli }}</p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-[10px] text-slate-400">{{ $dok->created_at->format('d M Y') }}</span>
-                                                @php
-                                                    $statusColor = match($dok->status) {
-                                                        'disetujui' => 'bg-green-100 text-green-700 border-green-200',
-                                                        'ditolak' => 'bg-red-100 text-red-700 border-red-200',
-                                                        default => 'bg-amber-100 text-amber-700 border-amber-200'
-                                                    };
-                                                @endphp
-                                                <span class="status-badge px-2 py-0.5 rounded-full text-[9px] font-black border {{ $statusColor }}">
-                                                    {{ ucfirst($dok->status) }}
-                                                </span>
-                                            </div>
+                                    {{-- Ikon PDF --}}
+                                    <span class="material-symbols-outlined text-red-500" style="font-size: 36px;">picture_as_pdf</span>
+                                    <div>
+                                        {{-- Nama File sebagai Link Preview --}}
+                                        <a href="{{ route('dosen.preview', $dok->id) }}" target="_blank" class="group flex items-center gap-1.5 click-effect">
+                                            <p class="font-bold text-slate-900 text-sm group-hover:text-[#1E3A8A] group-hover:underline transition-all">
+                                                {{ $dok->nama_file_asli }}
+                                            </p>
+                                            <span class="material-symbols-outlined text-[14px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">open_in_new</span>
+                                        </a>
+                                        
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[10px] text-slate-400">{{ $dok->created_at->format('d M Y') }}</span>
+                                            @php
+                                                $statusColor = match($dok->status) {
+                                                    'disetujui' => 'bg-green-100 text-green-700 border-green-200',
+                                                    'ditolak' => 'bg-red-100 text-red-700 border-red-200',
+                                                    default => 'bg-amber-100 text-amber-700 border-amber-200'
+                                                };
+                                            @endphp
+                                            <span class="status-badge px-2 py-0.5 rounded-full text-[9px] font-black border {{ $statusColor }}">
+                                                {{ ucfirst($dok->status) }}
+                                            </span>
                                         </div>
                                     </div>
+                                </div>
                                     <div class="flex items-center gap-2">
                                         <button class="btn-review p-2 text-slate-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all border border-transparent hover:border-amber-100 click-effect"
                                                 data-url="{{ route('dosen.status', $dok->id) }}"
@@ -406,6 +441,40 @@
             if (e.target === this) this.classList.add('hidden');
         });
     });
+
+    // ==========================================
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    // ==========================================
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return;
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
 </script>
 
 </body>

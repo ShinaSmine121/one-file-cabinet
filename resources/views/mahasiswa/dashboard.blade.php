@@ -77,7 +77,8 @@
 @endif
 
 {{-- SIDEBAR (LEBAR 14rem = w-56) --}}
-<nav class="h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-40">
+{{-- Tambahkan ID dan class transform untuk efek geser di mobile --}}
+<nav id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
     <div class="flex flex-col h-full py-6">
         <div class="px-4 mb-8">
             <div class="flex items-center gap-2 mb-2">
@@ -118,10 +119,18 @@
 </nav>
 
 {{-- HEADER + MAIN (MARGIN LEFT w-56) --}}
-<div class="ml-56 min-h-screen flex flex-col">
+{{-- Hapus margin-left di HP, tapi pertahankan di Laptop (lg:ml-56) --}}
+<div class="lg:ml-56 min-h-screen flex flex-col transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-6 h-full">
-            <h2 class="text-xl font-bold text-[#1E3A8A]">Portal Mahasiswa</h2>
+        <div class="flex items-center justify-between px-4 lg:px-6 h-full">
+            <div class="flex items-center gap-3">
+                {{-- Tombol Hamburger (Hanya muncul di HP) --}}
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h2 class="text-xl font-bold text-[#1E3A8A] hidden sm:block">Portal Mahasiswa</h2>
+                <h2 class="text-lg font-bold text-[#1E3A8A] sm:hidden">Portal</h2>
+            </div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
                     <p class="text-sm font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
@@ -143,8 +152,20 @@
         @endif
 
         @if($errors->any())
-            <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                {{ $errors->first() }}
+            <div id="autoHideError" class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r-lg flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-red-500">error</span>
+                <p class="text-sm font-bold">
+                    @php
+                        $errorMsg = strtolower($errors->first());
+                        if (str_contains($errorMsg, 'greater than') || str_contains($errorMsg, 'maximum') || str_contains($errorMsg, 'size')) {
+                            echo 'Gagal mengunggah: Ukuran berkas terlalu besar. Silakan kompres PDF/Word Anda dan coba lagi.';
+                        } elseif (str_contains($errorMsg, 'type') || str_contains($errorMsg, 'mimes')) {
+                            echo 'Gagal mengunggah: Format berkas tidak didukung. Harap gunakan format .PDF, .DOC, atau .DOCX.';
+                        } else {
+                            echo 'Gagal mengunggah: Terjadi kesalahan. Pastikan berkas yang Anda pilih valid.';
+                        }
+                    @endphp
+                </p>
             </div>
         @endif
 
@@ -170,7 +191,7 @@
                         <input type="file" name="file_dokumen" id="file_{{ $laci->id }}" class="hidden" onchange="this.form.submit()" accept=".pdf,.doc,.docx">
                         
                         <button type="button" onclick="document.getElementById('file_{{ $laci->id }}').click()" 
-                            class="w-full border-2 border-[#1E3A8A] text-[#1E3A8A] font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#1E3A8A] hover:text-white transition-colors group-hover:bg-[#1E3A8A] group-hover:text-white cursor-pointer click-effect">
+                            class="w-full border-2 border-[#1E3A8A] text-[#1E3A8A] font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-[#1E3A8A] hover:text-white transition-colors cursor-pointer click-effect">
                             <span class="material-symbols-outlined">upload</span>
                             <span>Unggah Berkas</span>
                         </button>
@@ -196,6 +217,62 @@
             setTimeout(() => successAlert.remove(), 300);
         }, 1500);
     }
+
+    // TAMPILKAN DAN HILANGKAN ERROR OTOMATIS DALAM 3 DETIK (3000ms)
+    const errorAlert = document.getElementById('autoHideError');
+    if (errorAlert) {
+        setTimeout(() => {
+            errorAlert.style.transition = 'opacity 0.3s ease';
+            errorAlert.style.opacity = '0';
+            setTimeout(() => errorAlert.remove(), 300);
+        }, 4000);
+    }
+
+    // Fungsi untuk membuka/menutup sidebar dari tombol hamburger
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    // ==========================================
+    // FITUR MOBILE: SWIPE & KLIK DI LUAR SIDEBAR
+    // ==========================================
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    // 1. Sensor Deteksi Swipe (Usap Layar)
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        // Jika jari mengusap ke KIRI lebih dari 50 pixel, dan sidebar sedang terbuka
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full'); // Tutup sidebar
+        }
+    }
+
+    // 2. Sensor Deteksi Klik di Luar Sidebar
+    document.addEventListener('click', function(event) {
+        // Cek apakah yang diklik adalah bagian dalam sidebar atau tombol hamburger
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        // Jika layar lebar (Desktop), abaikan fitur ini
+        if (window.innerWidth >= 1024) return; 
+
+        // Jika user mengeklik di LUAR sidebar dan BUKAN mengeklik tombol hamburger
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full'); // Tutup sidebar
+        }
+    });
+
 </script>
 
 </body>

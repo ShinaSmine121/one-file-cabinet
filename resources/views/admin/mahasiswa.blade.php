@@ -70,7 +70,7 @@
 <body class="font-body-md text-slate-900">
 
 {{-- SIDEBAR --}}
-<aside class="h-screen w-72 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
+<aside id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-72 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-[60]">
     <div class="flex flex-col h-full py-6">
         <div class="px-6 mb-8">
             <div class="flex items-center gap-3 mb-2">
@@ -115,26 +115,43 @@
 </aside>
 
 {{-- MAIN CONTENT --}}
-<div class="ml-72 min-h-screen flex flex-col">
-
+<div class="lg:ml-72 min-h-screen flex flex-col transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-8 h-full mx-auto w-full">
-            <h2 class="text-xl font-bold text-[#1E3A8A]">Manajemen Mahasiswa</h2>
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
-                        <p class="text-[10px] text-slate-500 font-medium">{{ Auth::user()->email }}</p>
-                    </div>
-                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+        <div class="flex items-center justify-between px-4 lg:px-8 h-full mx-auto w-full gap-2">
+            
+            {{-- KIRI: Tombol Menu & Judul --}}
+            <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect shrink-0">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="truncate">
+                    <h2 class="text-lg lg:text-xl font-bold text-[#1E3A8A] truncate">
+                        <span class="hidden sm:inline">Manajemen Mahasiswa</span>
+                        <span class="sm:hidden">Data Mahasiswa</span>
+                    </h2>
                 </div>
             </div>
+
+            {{-- KANAN: Profil Admin --}}
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-0 shrink-0 border-l sm:border-none border-slate-200">
+                <div class="text-right min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate max-w-[90px] sm:max-w-none">
+                        {{ Auth::user()->name }}
+                    </p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 font-medium truncate max-w-[90px] sm:max-w-none">
+                        <span class="hidden sm:inline">{{ Auth::user()->email }}</span>
+                        <span class="sm:hidden">Admin</span>
+                    </p>
+                </div>
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold shrink-0">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </div>
+            </div>
+
         </div>
     </header>
 
-    <main class="p-8 mx-auto w-full space-y-6">
+    <main class="p-4 sm:p-6 lg:p-8 mx-auto w-full space-y-4 lg:space-y-6">
 
         {{-- NOTIFIKASI SUKSES OTOMATIS HILANG --}}
         @if(session('success'))
@@ -146,7 +163,7 @@
 
         {{-- FILTER CARD --}}
         <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden p-6 mb-6">
-            <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+            <form method="GET" class="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
                 <div class="flex-1 w-full">
                     <label class="block text-sm font-semibold text-slate-700 mb-1">Cari Nama / NIM</label>
                     <div class="relative">
@@ -158,7 +175,7 @@
                 </div>
                 <div class="w-full md:w-48">
                     <label class="block text-sm font-semibold text-slate-700 mb-1">Angkatan</label>
-                    <select name="angkatan" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] outline-none">
+                    <select name="angkatan" class="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#1E3A8A] outline-none bg-white">
                         <option value="">Semua Angkatan</option>
                         @foreach($listAngkatan as $thn)
                             <option value="{{ $thn }}" {{ request('angkatan') == $thn ? 'selected' : '' }}>
@@ -167,12 +184,21 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="bg-[#1E3A8A] text-white px-6 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 click-effect hover-gradiant-primary">
-                        <span class="material-symbols-outlined text-sm">filter_alt</span> Filter
+                
+                {{-- Tombol Filter dan Reset: Memanjang di HP, Mengecil di PC --}}
+                <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto mt-2 md:mt-0">
+                    <button type="submit" 
+                    class="w-full sm:w-auto bg-[#1E3A8A] text-white px-6 py-2.5 rounded-lg font-bold 
+                    transition-all duration-300 flex items-center justify-center gap-2 
+                    shadow-md click-effect hover-gradiant-primary 
+                    hover:scale-105 hover:shadow-lg active:scale-95">
+                        <span class="material-symbols-outlined text-sm transition-transform duration-300 group-hover:rotate-6">
+                            filter_alt
+                        </span> 
+                        Filter
                     </button>
                     @if(request('search') || request('angkatan'))
-                        <a href="{{ route('admin.mahasiswa.index') }}" class="border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center click-effect">
+                        <a href="{{ route('admin.mahasiswa.index') }}" class="w-full sm:w-auto border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center justify-center click-effect">
                             <span class="material-symbols-outlined text-sm">close</span> Reset
                         </a>
                     @endif
@@ -432,6 +458,38 @@
             btn.disabled = false;
         }
     }
+    // ==========================================
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    // ==========================================
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return;
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });    
 
 </script>
 

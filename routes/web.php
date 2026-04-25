@@ -53,6 +53,8 @@ Route::delete('/admin/dokumen/{id}', [\App\Http\Controllers\AdminController::cla
 // Rute untuk mengunduh file oleh Admin
 Route::get('/admin/download/{id}', [App\Http\Controllers\AdminController::class, 'download'])->name('admin.download');
 
+// Rute untuk melihat file oleh Admin
+Route::get('/admin/dokumen/{id}/preview', [App\Http\Controllers\AdminController::class, 'preview'])->name('admin.preview');
 
 use App\Http\Controllers\DosenController;
 
@@ -61,6 +63,7 @@ Route::get('/dosen/download/{id}', [DosenController::class, 'download'])->name('
 Route::post('/dosen/update-status/{id}', [DosenController::class, 'updateStatus'])->name('dosen.status');
 Route::get('/dosen/mahasiswa', [\App\Http\Controllers\DosenController::class, 'mahasiswaIndex'])->name('dosen.mahasiswa.index');
 Route::get('/dosen/mahasiswa/{id}/arsip', [\App\Http\Controllers\DosenController::class, 'arsipMahasiswa'])->name('dosen.mahasiswa.arsip');
+Route::get('/dosen/dokumen/{id}/preview', [App\Http\Controllers\DosenController::class, 'preview'])->name('dosen.preview');
 
 Route::get('/mahasiswa/dashboard', [\App\Http\Controllers\MahasiswaController::class, 'index'])->name('mahasiswa.dashboard');
 Route::post('/mahasiswa/upload', [\App\Http\Controllers\MahasiswaController::class, 'upload'])->name('mahasiswa.upload');
@@ -69,3 +72,4 @@ Route::get('/mahasiswa/riwayat', [\App\Http\Controllers\MahasiswaController::cla
 Route::delete('/mahasiswa/berkas/{id}', [\App\Http\Controllers\MahasiswaController::class, 'hapusBerkas'])->name('mahasiswa.hapus');
 Route::get('/mahasiswa/download/{id}', [\App\Http\Controllers\MahasiswaController::class, 'downloadBerkas'])->name('mahasiswa.download');
 Route::post('/mahasiswa/update-nama', [\App\Http\Controllers\MahasiswaController::class, 'updateNama'])->name('mahasiswa.update_nama');
+Route::get('/mahasiswa/dokumen/{id}/preview', [App\Http\Controllers\MahasiswaController::class, 'previewBerkas'])->name('mahasiswa.preview');

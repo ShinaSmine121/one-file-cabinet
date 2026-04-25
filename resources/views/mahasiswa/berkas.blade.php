@@ -43,7 +43,8 @@
 <body class="flex font-body-md text-slate-900">
 
 {{-- SIDEBAR (IDENTIK DENGAN DASHBOARD) --}}
-<nav class="h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-40">
+{{-- Tambahkan ID dan efek geser khusus HP (z-index dinaikkan jadi 50) --}}
+<nav id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
     <div class="flex flex-col h-full py-6">
         <div class="px-4 mb-8">
             <div class="flex items-center gap-2 mb-2">
@@ -84,10 +85,17 @@
 </nav>
 
 {{-- HEADER + MAIN (ML-56) --}}
-<div class="ml-56 min-h-screen flex flex-col w-full">
+<div class="lg:ml-56 min-h-screen flex flex-col w-full transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-6 h-full">
-            <h2 class="text-xl font-bold text-[#1E3A8A]">Berkas Saya</h2>
+        <div class="flex items-center justify-between px-4 lg:px-6 h-full">
+            <div class="flex items-center gap-3">
+                {{-- Tombol Hamburger (Hanya muncul di HP) --}}
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <h2 class="text-xl font-bold text-[#1E3A8A] hidden sm:block">Berkas Saya</h2>
+                <h2 class="text-lg font-bold text-[#1E3A8A] sm:hidden">Berkas</h2>
+            </div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
                     <p class="text-sm font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
@@ -157,7 +165,10 @@
         </div>
         <div class="p-6 overflow-y-auto flex-1" id="modalFileList"></div>
         <div class="p-4 border-t bg-slate-50 flex justify-end">
-            <button onclick="closeLaciModal()" class="px-5 py-2 bg-[#1E3A8A] text-white rounded-lg font-bold hover:bg-blue-900 transition-colors shadow-md click-effect">
+            <button onclick="closeLaciModal()" 
+            class="px-5 py-2 bg-[#1E3A8A] text-white rounded-lg font-bold 
+            transition-all duration-300 shadow-md click-effect 
+            hover-gradiant-primary hover:scale-105 active:scale-95">
                 Tutup
             </button>
         </div>
@@ -195,6 +206,7 @@
                         'status' => $dok->status,
                         'download_url' => route('mahasiswa.download', $dok->id),
                         'delete_url' => route('mahasiswa.hapus', $dok->id),
+                        'preview_url' => route('mahasiswa.preview', $dok->id), 
                     ];
                 })->values()->all(),
             ]
@@ -217,14 +229,30 @@
             fileListDiv.innerHTML = `<div class="text-center py-10 text-slate-500"><span class="material-symbols-outlined text-5xl mb-3 text-slate-200">folder_open</span><p>Belum ada berkas.</p></div>`;
         } else {
             let html = `<div class="space-y-3">`;
-            laci.dokumens.forEach(dok => {
+           laci.dokumens.forEach(dok => {
+                // Menentukan warna badge berdasarkan status
+                let statusColor = 'bg-amber-100 text-amber-700 border-amber-200'; // Default: pending
+                if(dok.status === 'disetujui') statusColor = 'bg-green-100 text-green-700 border-green-200';
+                if(dok.status === 'ditolak') statusColor = 'bg-red-100 text-red-700 border-red-200';
+                
+                // Capitalize huruf pertama status
+                let statusText = dok.status.charAt(0).toUpperCase() + dok.status.slice(1);
+
                 html += `
-                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 group">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-red-500 text-3xl">picture_as_pdf</span>
+                    <div class="flex items-center justify-between p-4 bg-slate-50/80 rounded-xl border border-slate-100 hover:bg-white hover:shadow-sm hover:border-[#1E3A8A]/30 transition-all">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-red-500" style="font-size: 36px;">picture_as_pdf</span>
                             <div>
-                                <p class="font-bold text-sm text-slate-800">${dok.nama_file_asli}</p>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${dok.created_at} • ${dok.status}</p>
+                                <a href="${dok.preview_url}" target="_blank" class="group flex items-center gap-1.5 click-effect w-max mb-1">
+                                    <p class="font-bold text-sm text-slate-800 group-hover:text-[#1E3A8A] group-hover:underline transition-all">${dok.nama_file_asli}</p>
+                                    <span class="material-symbols-outlined text-[14px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Buka di tab baru">open_in_new</span>
+                                </a>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-400 font-medium">${dok.created_at}</span>
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-black border ${statusColor}">
+                                        ${statusText}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
@@ -285,6 +313,40 @@
         const modal = document.getElementById('confirmModal');
         modal.classList.add('hidden');
     }
+    
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    // Fungsi klik tombol hamburger
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    // Sensor usap (swipe) ke kiri untuk menutup
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    // Sensor klik di luar area sidebar untuk menutup
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return; // Abaikan jika di Laptop
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });    
 
     document.getElementById('laciModal').addEventListener('click', function(e) {
         if (e.target === this) closeLaciModal();

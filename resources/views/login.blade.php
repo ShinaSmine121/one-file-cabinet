@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="glass-effect p-8 lg:p-10 rounded-3xl lg:shadow-2xl lg:border lg:border-slate-100">
+            <div class="glass-effect p-6 sm:p-8 lg:p-10 rounded-3xl lg:shadow-2xl lg:border lg:border-slate-100">
                 <div class="mb-10">
                     <h3 class="text-3xl font-extrabold text-slate-900">Selamat Datang</h3>
                     <p class="text-slate-500 mt-2 font-medium">Silakan masuk untuk mengakses laci dokumen Anda.</p>
@@ -83,7 +83,7 @@
                 </div>
                 @endif
 
-                <form action="{{ route('login.post') }}" method="POST" class="space-y-6">
+                <form action="{{ route('login.post') }}" method="POST" autocomplete="off" class="space-y-6">
                     @csrf
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-widest mb-2 px-1">NIM / Email Kampus</label>
@@ -94,7 +94,7 @@
                             {{-- Tambahkan value="{{ old('identifier') }}" agar ketikan NIM sebelumnya tidak hilang saat error --}}
                             <input type="text" name="identifier" required value="{{ old('identifier') }}"
                                 class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border {{ (session('error') || $errors->any()) ? 'border-red-400 focus:border-red-600 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-blue-900 focus:ring-blue-100' }} rounded-2xl text-sm focus:bg-white focus:ring-4 outline-none transition-all" 
-                                placeholder="E1E1xx... / admin@uho.ac.id">
+                                placeholder="E1E1xx... / example@uho.ac.id">
                         </div>
                     </div>
 
@@ -128,13 +128,96 @@
 
                 <div class="mt-10 text-center">
                     <p class="text-sm text-slate-500 font-medium">Butuh bantuan akses? <br> 
-                        <a href="#" class="text-blue-900 font-bold hover:underline">Hubungi Admin Lab Informatika</a>
+                        <a href="#" onclick="openHelpModal(event)" class="text-blue-900 font-bold hover:underline transition-all">Hubungi Admin Lab Informatika</a>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{{-- MODAL BANTUAN AKSES (POP-UP) --}}
+{{-- MODAL BANTUAN AKSES (POP-UP) --}}
+<div id="helpModal" class="fixed inset-0 bg-slate-900/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+    <div id="helpModalContent" class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl transform scale-95 transition-all duration-300">
+        
+        {{-- Header Modal --}}
+        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+            <h3 class="text-xl font-extrabold text-blue-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-yellow-500 text-2xl">warning</span>
+                Pusat Bantuan
+            </h3>
+            <button onclick="closeHelpModal()" class="text-slate-400 hover:text-red-500 transition-colors p-1.5 rounded-xl hover:bg-red-50 active:scale-95">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        {{-- Body Modal --}}
+        <div class="text-sm text-slate-600 font-medium text-justify leading-relaxed mb-6 space-y-3">
+            <p>
+                Untuk mereset kata sandi atau kendala akses lainnya, silakan mengunjungi langsung <b class="text-slate-800">Ruang Admin (Ruang Jurusan Teknik Informatika)</b> pada jam kerja 09:00 - 15:30 WITA.
+            </p>
+            <p class="p-3 bg-blue-50 rounded-xl text-blue-900 border border-blue-100 text-xs">
+                <b class="flex items-center gap-1 mb-1"><span class="material-symbols-outlined text-[14px]">info</span> Opsi Alternatif:</b>
+                Anda juga dapat menghubungi Admin melalui WhatsApp untuk respons cepat.
+            </p>
+        </div>
+        
+        {{-- Footer Modal (Dua Tombol: Tumpuk di HP, Sebelahan di PC) --}}
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button onclick="closeHelpModal()" class="flex-1 px-4 py-3 border-2 border-slate-100 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 active:scale-95 transition-all">
+                Tutup
+            </button>
+            
+            {{-- Ganti nomor 6281234567890 dengan nomor WhatsApp Admin yang asli --}}
+            <a href="https://wa.me/6282190314067?text=Halo%20Admin%20Jurusan,%20saya%20mahasiswa%20Teknik%20Informatika.%20Saya%20butuh%20bantuan%20akses%20login%20untuk%20sistem%20One%20File%20Cabinet." target="_blank" 
+            class="flex-[2] bg-blue-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-900/20 hover:bg-blue-800 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">forum</span>
+                Chat Admin
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openHelpModal(e) {
+        if(e) e.preventDefault(); // Mencegah halaman scroll ke atas
+        const modal = document.getElementById('helpModal');
+        const content = document.getElementById('helpModalContent');
+        
+        // Tampilkan elemen dulu
+        modal.classList.remove('hidden');
+        
+        // Trigger animasi perlahan (fade-in & zoom-in)
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeHelpModal() {
+        const modal = document.getElementById('helpModal');
+        const content = document.getElementById('helpModalContent');
+        
+        // Trigger animasi menghilang
+        modal.classList.add('opacity-0');
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+        
+        // Sembunyikan elemen setelah animasi selesai (300ms)
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // Fitur tambahan: Tutup modal kalau user klik di luar kotak putih
+    document.getElementById('helpModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeHelpModal();
+        }
+    });
+</script>
 
 </body>
 </html>

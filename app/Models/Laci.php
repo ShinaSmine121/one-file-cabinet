@@ -12,6 +12,7 @@ class Laci extends Model
     protected $fillable = [
         'nama_laci',
         'deskripsi',
+        'angkatan',
     ];
 
     /**

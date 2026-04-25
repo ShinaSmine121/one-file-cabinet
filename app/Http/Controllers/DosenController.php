@@ -75,6 +75,21 @@ class DosenController extends Controller
     }
 
     /**
+     * Preview file dokumen langsung di browser (Inline).
+     */
+    public function preview($id)
+    {
+        $dokumen = Dokumen::findOrFail($id);
+
+        if (Storage::exists($dokumen->path_file)) {
+            return Storage::response($dokumen->path_file);
+        }
+
+        return back()->with('error', 'File tidak ditemukan di server.');
+    }
+
+
+    /**
      * Update status review dokumen (setujui/tolak + catatan).
      */
     public function updateStatus(Request $request, $id)
@@ -129,13 +144,19 @@ class DosenController extends Controller
         return view('dosen.mahasiswa', compact('mahasiswas', 'listAngkatan'));
     }
 
-    /**
-     * Menampilkan laci dan berkas milik satu mahasiswa spesifik.
-     */
     public function arsipMahasiswa($id)
     {
+        // 1. Cari data mahasiswa
         $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-        $lacis = Laci::all();
+        
+        // 2. Ambil 2 digit angkatan dari NIM mahasiswa
+        $angkatanMhs = substr($mahasiswa->nim, 4, 2);
+
+        // 3. Terapkan filter laci sesuai angkatan mahasiswa tersebut
+        $lacis = Laci::where('angkatan', $angkatanMhs)
+                     ->orWhereNull('angkatan')
+                     ->get();
+
         $dokumens = Dokumen::where('user_id', $id)->get();
 
         return view('dosen.arsip', compact('mahasiswa', 'lacis', 'dokumens'));

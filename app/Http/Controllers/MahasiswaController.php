@@ -12,10 +12,20 @@ class MahasiswaController extends Controller
 {
     public function index()
     {
-        // Mengambil semua data laci dari database
-        $lacis = Laci::all();
+        $user = Auth::user();
+        
+        // Memotong NIM untuk mengambil 2 digit angkatan (Karakter ke-5 dan ke-6)
+        // Contoh: E1E123001 -> akan diambil '23'
+        $angkatan = substr($user->nim, 4, 2);
+
+        // Hanya mengambil Laci yang angkatannya cocok dengan mahasiswa, 
+        // ATAU laci umum (yang angkatannya belum diisi/null)
+        $lacis = Laci::where('angkatan', $angkatan)
+                     ->orWhereNull('angkatan')
+                     ->get();
+
         // Mengambil riwayat dokumen yang pernah diupload mahasiswa ini
-        $dokumens = Dokumen::where('user_id', Auth::id())->latest()->get();
+        $dokumens = Dokumen::where('user_id', $user->id)->latest()->get();
 
         return view('mahasiswa.dashboard', compact('lacis', 'dokumens'));
     }
@@ -57,13 +67,17 @@ class MahasiswaController extends Controller
 
     public function berkasSaya()
     {
-        // Ambil semua laci
-        $lacis = \App\Models\Laci::all();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $angkatan = substr($user->nim, 4, 2);
+
+        // Terapkan filter pintar yang sama seperti di Dashboard
+        $lacis = \App\Models\Laci::where('angkatan', $angkatan)
+                                 ->orWhereNull('angkatan')
+                                 ->get();
         
         // Ambil semua dokumen khusus milik mahasiswa yang sedang login
-        $dokumens = \App\Models\Dokumen::where('user_id', \Illuminate\Support\Facades\Auth::id())->get();
+        $dokumens = \App\Models\Dokumen::where('user_id', $user->id)->get();
         
-        // Kirim KEDUA variabel tersebut ke view
         return view('mahasiswa.berkas', compact('lacis', 'dokumens'));
     }
 
@@ -104,6 +118,22 @@ class MahasiswaController extends Controller
         return back()->with('error', 'File tidak ditemukan di server.');
     }
 
+    /**
+     * Preview file dokumen milik mahasiswa (Inline).
+     */
+    public function previewBerkas($id)
+    {
+        // Pastikan mahasiswa hanya bisa melihat berkas miliknya sendiri
+        $dokumen = \App\Models\Dokumen::where('id', $id)
+                    ->where('user_id', \Illuminate\Support\Facades\Auth::id())
+                    ->firstOrFail();
+        
+        if (\Illuminate\Support\Facades\Storage::exists($dokumen->path_file)) {
+            return \Illuminate\Support\Facades\Storage::response($dokumen->path_file);
+        }
+
+        return back()->with('error', 'File tidak ditemukan di server.');
+    }
 
     public function updateNama(Request $request)
     {

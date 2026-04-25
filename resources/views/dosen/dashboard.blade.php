@@ -49,7 +49,7 @@
 <body class="font-body-md text-slate-900">
 
 {{-- SIDEBAR (KONSISTEN DENGAN DASHBOARD MAHASISWA) --}}
-<nav class="h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-40">
+<nav id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
     <div class="flex flex-col h-full py-6">
         <div class="px-4 mb-8">
             <div class="flex items-center gap-2 mb-2">
@@ -86,19 +86,39 @@
 </nav>
 
 {{-- HEADER + MAIN (MARGIN LEFT w-56) --}}
-<div class="ml-56 min-h-screen flex flex-col">
+<div class="lg:ml-56 min-h-screen flex flex-col transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-6 h-full">
-            <h2 class="text-xl font-bold text-[#1E3A8A]">Dashboard Dosen</h2>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <p class="text-sm font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
-                    <p class="text-xs text-slate-500">Dosen Teknik Informatika</p>
+        <div class="flex items-center justify-between px-4 lg:px-6 h-full gap-2">
+            
+            {{-- KIRI: Tombol Menu & Judul --}}
+            <div class="flex items-center gap-2 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect shrink-0">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="truncate">
+                    <h2 class="text-lg lg:text-xl font-bold text-[#1E3A8A] truncate">
+                        <span class="sm:inline hidden">Dashboard Dosen</span>
+                        <span class="sm:hidden">Dashboard</span>
+                    </h2>
                 </div>
-                <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200">
+            </div>
+
+            {{-- KANAN: Profil Dosen --}}
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-0 shrink-0">
+                <div class="text-right min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate max-w-[100px] sm:max-w-none">
+                        {{ Auth::user()->name }}
+                    </p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 leading-none truncate max-w-[100px] sm:max-w-none">
+                        <span class="hidden sm:inline">Dosen Teknik Informatika</span>
+                        <span class="sm:hidden">Dosen TI</span>
+                    </p>
+                </div>
+                <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200 shrink-0">
                     {{ substr(Auth::user()->name, 0, 1) }}
                 </div>
             </div>
+
         </div>
     </header>
 
@@ -173,7 +193,11 @@
                         @endif
                     </select>
                 </div>
-                <button type="submit" class="bg-[#1E3A8A] text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-900 transition-all shadow-md click-effect hover-gradiant-primary">
+                <button type="submit" 
+                class="bg-[#1E3A8A] text-white px-6 py-2 rounded-lg text-sm font-bold 
+                transition-all duration-300 shadow-md 
+                click-effect hover-gradiant-primary 
+                hover:scale-105 hover:shadow-lg active:scale-95">
                     Filter
                 </button>
             </form>
@@ -211,10 +235,13 @@
                                 </span>
                             </td>
                             <td class="p-4">
-                                <div class="flex items-center gap-3">
-                                    <span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
-                                    <span class="font-medium text-slate-700 truncate max-w-[200px]">{{ $dok->nama_file_asli }}</span>
-                                </div>
+                                <a href="{{ route('dosen.preview', $dok->id) }}" target="_blank" class="flex items-center gap-3 group p-1.5 -ml-1.5 rounded-lg hover:bg-blue-50 transition-colors w-max click-effect">
+                                    <span class="material-symbols-outlined text-red-500 group-hover:text-red-600 transition-colors">picture_as_pdf</span>
+                                    <span class="font-medium text-slate-700 group-hover:text-[#1E3A8A] group-hover:underline truncate max-w-[200px] transition-all">
+                                        {{ $dok->nama_file_asli }}
+                                    </span>
+                                    <span class="material-symbols-outlined text-[16px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Buka di tab baru">open_in_new</span>
+                                </a>
                             </td>
                             <td class="p-4 text-right">
                                 <div class="flex justify-end gap-2">
@@ -406,6 +433,40 @@
     document.getElementById('reviewModal').addEventListener('click', function(e) {
         if (e.target === this) closeReviewModal();
     });
+
+    // ==========================================
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    // ==========================================
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return;
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
 </script>
 
 </body>

@@ -37,7 +37,7 @@
 <body class="flex font-body-md text-slate-900">
 
 {{-- SIDEBAR (IDENTIK DENGAN DASHBOARD) --}}
-<nav class="h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-40">
+<nav id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-56 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
     <div class="flex flex-col h-full py-6">
         <div class="px-4 mb-8">
             <div class="flex items-center gap-2 mb-2">
@@ -78,27 +78,50 @@
 </nav>
 
 {{-- HEADER + MAIN (ML-56) --}}
-<div class="ml-56 min-h-screen flex flex-col w-full">
+<div class="lg:ml-56 min-h-screen flex flex-col w-full transition-all duration-300">
     <header class="w-full h-16 sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-6 h-full">
-            <div>
-                <h2 class="text-xl font-bold text-[#1E3A8A]">Riwayat Berkas</h2>
-                <p class="text-sm text-slate-500 hidden sm:block">Seluruh dokumen yang pernah Anda unggah beserta status review.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="bg-white rounded-lg border px-3 py-1.5 text-sm shadow-sm">
-                    Total: <span class="font-bold">{{ $dokumens->count() }}</span> berkas
+        <div class="flex items-center justify-between px-4 lg:px-6 h-full gap-2">
+            
+            {{-- KIRI: Tombol Menu & Judul --}}
+            <div class="flex items-center gap-2 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect shrink-0">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div class="truncate">
+                    <h2 class="text-lg lg:text-xl font-bold text-[#1E3A8A] truncate">
+                        <span class="sm:inline hidden">Riwayat Berkas</span>
+                        <span class="sm:hidden">Riwayat</span>
+                    </h2>
                 </div>
-                <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
-                    <div class="text-right">
-                        <p class="text-sm font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
-                        <p class="text-xs text-slate-500">{{ Auth::user()->nim }}</p>
+            </div>
+
+            {{-- KANAN: Statistik & Profil --}}
+            <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                
+                {{-- Lencana Total Berkas (Kini Muncul di Mobile & Desktop) --}}
+                <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-[#1E3A8A] px-2.5 sm:px-4 py-1.5 rounded-full shadow-sm shrink-0">
+                    <span class="material-symbols-outlined text-[16px] sm:text-[18px]">inventory_2</span>
+                    <span class="text-[10px] sm:text-xs font-black tracking-wide mt-0.5">
+                        {{ $dokumens->count() }} <span class="hidden xs:inline sm:inline">Berkas</span>
+                    </span>
+                </div>
+
+                {{-- Informasi Profil Mahasiswa --}}
+                <div class="flex items-center gap-2 sm:gap-3 pl-2 border-l border-slate-200">
+                    <div class="text-right min-w-0">
+                        <p class="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate max-w-[80px] sm:max-w-none">
+                            {{ Auth::user()->name }}
+                        </p>
+                        <p class="text-[10px] sm:text-xs text-slate-500 leading-none">
+                            {{ Auth::user()->nim }}
+                        </p>
                     </div>
-                    <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200">
+                    <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold border border-slate-200 shrink-0">
                         {{ substr(Auth::user()->name, 0, 1) }}
                     </div>
                 </div>
             </div>
+
         </div>
     </header>
 
@@ -199,7 +222,11 @@
             </div>
         </div>
         <div class="p-4 border-t bg-slate-50 flex justify-end">
-            <button onclick="closeDetailModal()" class="px-5 py-2 bg-[#1E3A8A] text-white rounded-lg font-medium hover:bg-blue-900 transition-colors click-effect">
+            <button onclick="closeDetailModal()" 
+            class="group px-5 py-2 bg-[#1E3A8A] text-white rounded-lg font-medium 
+            transition-all duration-300 shadow-md 
+            click-effect hover-gradiant-primary 
+            hover:scale-105 hover:shadow-lg active:scale-95">
                 Tutup
             </button>
         </div>
@@ -237,6 +264,40 @@
     document.getElementById('detailModal').addEventListener('click', function(e) {
         if (e.target === this) closeDetailModal();
     });
+
+    // ==========================================
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    // ==========================================
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return;
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
 </script>
 
 </body>

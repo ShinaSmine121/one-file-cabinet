@@ -75,7 +75,7 @@
 <body class="font-body-md text-slate-900">
 
 {{-- SIDEBAR ADMIN (TANPA FADE-IN) --}}
-<aside class="h-screen w-72 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-50">
+<aside id="sidebar" class="transform -translate-x-full lg:translate-x-0 transition-transform duration-300 h-screen w-72 border-r flex flex-col fixed left-0 top-0 bg-white shadow-sm z-[60]">
     <div class="flex flex-col h-full py-6">
         <div class="px-6 mb-8">
             <div class="flex items-center gap-3 mb-2">
@@ -120,46 +120,75 @@
 </aside>
 
 {{-- MAIN CONTENT --}}
-<div class="ml-72 min-h-screen flex flex-col">
+<div class="lg:ml-72 min-h-screen flex flex-col transition-all duration-300">
     
     {{-- HEADER (TANPA FADE-IN) --}}
     <header class="w-full h-16 sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div class="flex items-center justify-between px-8 h-full mx-auto w-full">
-            <div class="flex items-center gap-3">
-                <a href="{{ route('admin.mahasiswa.index') }}" class="p-2 text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all click-effect">
+        <div class="flex items-center justify-between px-4 lg:px-8 h-full mx-auto w-full gap-2">
+            
+            {{-- KIRI: Hamburger, Tombol Back, & Judul --}}
+            <div class="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg click-effect shrink-0">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <a href="{{ route('admin.mahasiswa.index') }}" class="p-1.5 sm:p-2 text-slate-500 hover:text-[#1E3A8A] hover:bg-blue-50 rounded-lg transition-all click-effect shrink-0">
                     <span class="material-symbols-outlined">arrow_back</span>
                 </a>
-                <h2 class="text-xl font-bold text-[#1E3A8A]">Arsip Mahasiswa</h2>
-            </div>
-            <div class="flex items-center gap-6">
-                <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-slate-900 leading-none">{{ Auth::user()->name }}</p>
-                        <p class="text-[10px] text-slate-500 font-medium">{{ Auth::user()->email }}</p>
-                    </div>
-                    <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
+                <div class="truncate">
+                    <h2 class="text-lg lg:text-xl font-bold text-[#1E3A8A] truncate">
+                        <span class="hidden sm:inline">Arsip Mahasiswa</span>
+                        <span class="sm:hidden">Arsip</span>
+                    </h2>
                 </div>
             </div>
+
+            {{-- KANAN: Profil Admin --}}
+            <div class="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-0 shrink-0 border-l sm:border-none border-slate-200">
+                <div class="text-right min-w-0">
+                    <p class="text-xs sm:text-sm font-bold text-slate-900 leading-tight truncate max-w-[90px] sm:max-w-none">
+                        {{ Auth::user()->name }}
+                    </p>
+                    <p class="text-[10px] sm:text-xs text-slate-500 font-medium truncate max-w-[90px] sm:max-w-none">
+                        <span class="hidden sm:inline">{{ Auth::user()->email }}</span>
+                        <span class="sm:hidden">Admin</span>
+                    </p>
+                </div>
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold shrink-0">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </div>
+            </div>
+
         </div>
     </header>
 
     {{-- MAIN --}}
-    <main class="p-8 mx-auto w-full space-y-6">
+    <main class="p-4 sm:p-6 lg:p-8 mx-auto w-full space-y-4 lg:space-y-6">
         
-        {{-- PROFIL MAHASISWA --}}
-        <div class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        {{-- PROFIL MAHASISWA CARD & WIDGET (UPGRADED) --}}
+        <div class="bg-white p-5 lg:p-6 rounded-xl border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
             <div>
-                <h3 class="text-2xl font-black text-slate-900">{{ $mahasiswa->name }}</h3>
-                <p class="text-slate-500 font-medium mt-1 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm">badge</span> 
+                <h3 class="text-xl lg:text-2xl font-black text-slate-900">{{ $mahasiswa->name }}</h3>
+                <p class="text-sm text-slate-500 font-medium mt-1 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">badge</span> 
                     NIM: {{ $mahasiswa->nim }}
                 </p>
+                {{-- Badge Akses Admin --}}
+                <span class="inline-flex items-center gap-1 mt-3 px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-black rounded-md border border-amber-200 uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span> Akses Admin: Full Control
+                </span>
             </div>
-            <div class="bg-amber-50 px-5 py-3 rounded-xl border border-amber-100">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Akses Admin</p>
-                <p class="text-lg font-black text-amber-600">Full Control</p>
+            
+            {{-- DESAIN BARU TOTAL ARSIP: Sesuai Janji! Premium Widget --}}
+            <div class="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-white border border-blue-100 px-5 py-3.5 rounded-2xl shadow-sm w-full md:w-auto mt-2 md:mt-0">
+                <div class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-[#1E3A8A] shrink-0 border border-blue-50">
+                    <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Total Arsip</p>
+                    <p class="text-xl lg:text-2xl font-black text-[#1E3A8A] leading-none">
+                        {{ $dokumens->count() }} <span class="text-xs lg:text-sm font-bold text-blue-600/60">Berkas</span>
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -208,7 +237,13 @@
                                     <div class="flex items-center gap-4">
                                         <span class="material-symbols-outlined text-red-500" style="font-size: 36px;">picture_as_pdf</span>
                                         <div>
-                                            <p class="font-bold text-slate-900 text-sm">{{ $dok->nama_file_asli }}</p>
+                                            {{-- Nama File sebagai Link Preview --}}
+                                            <a href="{{ route('admin.preview', $dok->id) }}" target="_blank" class="group flex items-center gap-1.5 click-effect w-max">
+                                                <p class="font-bold text-slate-900 text-sm group-hover:text-[#1E3A8A] group-hover:underline transition-all">
+                                                    {{ $dok->nama_file_asli }}
+                                                </p>
+                                                <span class="material-symbols-outlined text-[14px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Buka di tab baru">open_in_new</span>
+                                            </a>
                                             <div class="flex items-center gap-2 mt-1">
                                                 <span class="text-[10px] text-slate-400">{{ $dok->created_at->format('d M Y') }}</span>
                                                 @php
@@ -524,6 +559,39 @@
         modal.addEventListener('click', function(e) {
             if (e.target === this) this.classList.add('hidden');
         });
+    });
+
+    // FITUR MOBILE: BUKA, SWIPE, & TAP LUAR SIDEBAR
+    const sidebar = document.getElementById('sidebar');
+    let touchstartX = 0;
+    let touchendX = 0;
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('-translate-x-full');
+    }
+
+    document.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        if (touchstartX - touchendX > 50 && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
+    });
+
+    // Menghindari konflik dengan modal (hanya tutup sidebar jika yang diklik bukan elemen modal)
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth >= 1024) return;
+        
+        const isClickInsideSidebar = sidebar.contains(event.target);
+        const isClickOnHamburger = event.target.closest('button[onclick="toggleSidebar()"]');
+        const isClickInsideModal = event.target.closest('[id^="modal_laci_"]') || event.target.closest('#reviewModal') || event.target.closest('#deleteModal');
+
+        if (!isClickInsideSidebar && !isClickOnHamburger && !isClickInsideModal && !sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('-translate-x-full');
+        }
     });
 </script>
 
