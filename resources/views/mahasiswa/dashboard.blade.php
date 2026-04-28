@@ -129,7 +129,7 @@
                     <span class="material-symbols-outlined">menu</span>
                 </button>
                 <h2 class="text-xl font-bold text-[#1E3A8A] hidden sm:block">Portal Mahasiswa</h2>
-                <h2 class="text-lg font-bold text-[#1E3A8A] sm:hidden">Portal</h2>
+                <h2 class="text-lg font-bold text-[#1E3A8A] sm:hidden">Dashboard</h2>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
